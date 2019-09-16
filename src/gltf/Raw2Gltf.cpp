@@ -398,8 +398,7 @@ ModelData* Raw2Gltf(
               metallic = roughness = 1.0f;
             } else {
               // no shininess texture,
-//              roughness = getRoughness(props->shininess);
-              roughness = 0.8f;
+              roughness = getRoughness(props->shininess);
             }
 
           } else {
@@ -445,9 +444,12 @@ ModelData* Raw2Gltf(
         occlusionTexture = simpleTex(RAW_TEXTURE_USAGE_OCCLUSION).get();
       }
 
+      // Setting DoubleSided
+      const bool isDoubleSided = material.isDoubleSided;
       std::shared_ptr<MaterialData> mData = gltf->materials.hold(new MaterialData(
           material.name,
           isTransparent,
+          isDoubleSided,
           material.info->shadingModel,
           normalTexture,
           occlusionTexture,
