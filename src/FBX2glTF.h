@@ -121,7 +121,7 @@ struct GltfOptions {
   /** Whether to normalized skinning weights. */
   bool normalizeSkinningWeights{true};
   /** Maximum number of bone influences per vertex. */
-  int maxSkinningWeights{8};
+  int maxSkinningWeights{4};
   /** When to compute vertex normals from geometry. */
   ComputeNormalsOption computeNormals = ComputeNormalsOption::BROKEN;
   /** When to use 32-bit indices. */
