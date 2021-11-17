@@ -87,7 +87,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: latest-windows
           prerelease: true
-          title: FBX2glTF packages
+          title: FBX2glTF Windows packages
           files: |
             build/fbx2gltf-windows.zip
   build-ubuntu:
@@ -171,7 +171,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: latest-linux
           prerelease: true
-          title: FBX2glTF packages
+          title: FBX2glTF Linux packages
           files: |
             build/fbx2gltf-linux.zip
 
@@ -259,6 +259,6 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: latest-macos
           prerelease: true
-          title: FBX2glTF packages
+          title: FBX2glTF Macos packages
           files: |
             build/fbx2gltf-macos.zip
