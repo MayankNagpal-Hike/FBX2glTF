@@ -214,6 +214,7 @@ target_link_libraries(libFBX2glTF
   optimized ${FBXSDK_LIBRARY}
   debug ${FBXSDK_LIBRARY_DEBUG}
   fmt::fmt
+  LibXml2::LibXml2
   ZLIB::ZLIB
   Iconv::Iconv
   LibXml2::LibXml2
