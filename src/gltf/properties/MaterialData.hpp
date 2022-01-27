@@ -32,8 +32,21 @@ struct PBRMetallicRoughness {
       float metallic = 0.1f,
       float roughness = 0.6f);
 
+  PBRMetallicRoughness(
+      const TextureData* baseColorTexture,
+      const TextureData* metallicTexture,
+      const TextureData* roughnessTexture,
+      const Vec4f& baseColorFactor,
+      float metallic = 0.1f,
+      float roughness = 0.6f);
+
   std::unique_ptr<Tex> baseColorTexture;
+  // combined textures
   std::unique_ptr<Tex> metRoughTexture;
+  // separate textures
+  std::unique_ptr<Tex> metallicTexture;
+  std::unique_ptr<Tex> roughnessTexture;
+
   const Vec4f baseColorFactor;
   const float metallic;
   const float roughness;
@@ -43,7 +56,6 @@ struct MaterialData : Holdable {
   MaterialData(
       std::string name,
       bool isTransparent,
-      bool isDoubleSided,
       RawShadingModel shadingModel,
       const TextureData* normalTexture,
       const TextureData* occlusionTexture,
@@ -57,7 +69,6 @@ struct MaterialData : Holdable {
   const std::string name;
   const RawShadingModel shadingModel;
   const bool isTransparent;
-  const bool isDoubleSided;
   const std::unique_ptr<const Tex> normalTexture;
   const std::unique_ptr<const Tex> occlusionTexture;
   const std::unique_ptr<const Tex> emissiveTexture;
