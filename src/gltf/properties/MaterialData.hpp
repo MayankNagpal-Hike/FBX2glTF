@@ -56,6 +56,7 @@ struct MaterialData : Holdable {
   MaterialData(
       std::string name,
       bool isTransparent,
+      bool isDoubleSided,
       RawShadingModel shadingModel,
       const TextureData* normalTexture,
       const TextureData* occlusionTexture,
@@ -69,6 +70,7 @@ struct MaterialData : Holdable {
   const std::string name;
   const RawShadingModel shadingModel;
   const bool isTransparent;
+  const bool isDoubleSided;
   const std::unique_ptr<const Tex> normalTexture;
   const std::unique_ptr<const Tex> occlusionTexture;
   const std::unique_ptr<const Tex> emissiveTexture;
