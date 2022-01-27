@@ -38,8 +38,6 @@ clamp(const Vec4f& vec, const Vec4f& bottom = VEC4F_ZERO, const Vec4f& top = VEC
   return Vec4f::Max(bottom, Vec4f::Min(top, vec));
 }
 
-bool isBlend = false;
-
 PBRMetallicRoughness::PBRMetallicRoughness(
     const TextureData* baseColorTexture,
     const TextureData* metRoughTexture,
@@ -58,9 +56,7 @@ void to_json(json& j, const PBRMetallicRoughness& d) {
     j["baseColorTexture"] = *d.baseColorTexture;
   }
   if (d.baseColorFactor.LengthSquared() > 0) {
-    isBlend = d.baseColorFactor.w == 0.00f;
-//    j["baseColorFactor"] = toStdVec(d.baseColorFactor);
-    j["baseColorFactor"] = toStdVec(Vec4f(d.baseColorFactor.x, d.baseColorFactor.y, d.baseColorFactor.z, 1.0f));
+    j["baseColorFactor"] = toStdVec(d.baseColorFactor);
   }
   if (d.metRoughTexture != nullptr) {
     j["metallicRoughnessTexture"] = *d.metRoughTexture;
@@ -77,7 +73,6 @@ void to_json(json& j, const PBRMetallicRoughness& d) {
 MaterialData::MaterialData(
     std::string name,
     bool isTransparent,
-    bool isDoubleSided,
     const RawShadingModel shadingModel,
     const TextureData* normalTexture,
     const TextureData* occlusionTexture,
@@ -89,7 +84,6 @@ MaterialData::MaterialData(
       name(std::move(name)),
       shadingModel(shadingModel),
       isTransparent(isTransparent),
-      isDoubleSided(isDoubleSided),
       normalTexture(Tex::ref(normalTexture)),
       occlusionTexture(Tex::ref(occlusionTexture)),
       emissiveTexture(Tex::ref(emissiveTexture)),
@@ -98,14 +92,12 @@ MaterialData::MaterialData(
       pbrMetallicRoughness(pbrMetallicRoughness) {}
 
 json MaterialData::serialize() const {
-  json result = {
-      {"name", name},
-      {"alphaMode", isTransparent ? "BLEND" : "OPAQUE"},
-      {"doubleSided", isDoubleSided},
-      {"extras",
-       {{"fromFBX",
-         {{"shadingModel", Describe(shadingModel)},
-          {"isTruePBR", shadingModel == RAW_SHADING_MODEL_PBR_MET_ROUGH}}}}}};
+  json result = {{"name", name},
+                 {"alphaMode", isTransparent ? "BLEND" : "OPAQUE"},
+                 {"extras",
+                  {{"fromFBX",
+                    {{"shadingModel", Describe(shadingModel)},
+                     {"isTruePBR", shadingModel == RAW_SHADING_MODEL_PBR_MET_ROUGH}}}}}};
 
   if (normalTexture != nullptr) {
     result["normalTexture"] = *normalTexture;
@@ -127,7 +119,6 @@ json MaterialData::serialize() const {
     extensions[KHR_MATERIALS_CMN_UNLIT] = *khrCmnConstantMaterial;
     result["extensions"] = extensions;
   }
-  result["alphaMode"] = isBlend ? "BLEND" : "OPAQUE";
 
   for (const auto& i : userProperties) {
     auto& prop_map = result["extras"]["fromFBX"]["userProperties"];
