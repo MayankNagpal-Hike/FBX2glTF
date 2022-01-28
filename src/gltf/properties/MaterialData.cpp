@@ -83,13 +83,13 @@ void to_json(json& j, const PBRMetallicRoughness& d) {
       j["metallicTexture"] = *d.metallicTexture;
       j["metallicFactor"] = 1.0f;
     } else {
-      j["metallicFactor"] = d.metallic;
+      j["metallicFactor"] = 0.0f;
     }
     if (d.roughnessTexture) {
       j["roughnessTexture"] = *d.roughnessTexture;
       j["roughnessFactor"] = 1.0f;
     } else {
-      j["roughnessFactor"] = d.roughness;
+      j["roughnessFactor"] = 0.8f;
     }
   }
 }
