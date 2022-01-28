@@ -38,8 +38,7 @@ struct RawBlendVertex {
   }
 };
 
-struct RawVertexSkinningInfo
-{
+struct RawVertexSkinningInfo {
   int jointIndex;
   float jointWeight;
 
@@ -58,7 +57,7 @@ struct RawVertex {
   Vec2f uv1{0.0f};
   std::vector<Vec4i> jointIndices;
   std::vector<Vec4f> jointWeights;
-  
+
   std::vector<RawVertexSkinningInfo> skinningInfo;
   // end of members that directly correspond to vertex attributes
 
@@ -270,6 +269,7 @@ struct RawMaterial {
   std::shared_ptr<RawMatProps> info;
   int textures[RAW_TEXTURE_USAGE_MAX];
   std::vector<std::string> userProperties;
+  bool isDoubleSided;
 };
 
 enum RawLightType {
@@ -359,7 +359,6 @@ struct RawNode {
 
 class RawModel {
  public:
-
   RawModel();
 
   // Add geometry.
@@ -383,7 +382,8 @@ class RawModel {
       const RawMaterialType materialType,
       const int textures[RAW_TEXTURE_USAGE_MAX],
       std::shared_ptr<RawMatProps> materialInfo,
-      const std::vector<std::string>& userProperties);
+      const std::vector<std::string>& userProperties,
+      const bool isDoubleSided);
   int AddLight(
       const char* name,
       RawLightType lightType,
@@ -437,8 +437,8 @@ class RawModel {
   int GetVertexCount() const {
     return (int)vertices.size();
   }
-  
-  int GetGlobalWeightCount() const{
+
+  int GetGlobalWeightCount() const {
     return globalMaxWeights;
   }
 
@@ -527,10 +527,10 @@ class RawModel {
   // Create individual attribute arrays, with the source as an array.
   // Returns true if the vertices store the particular attribute.
   template <typename _attrib_type_>
-  void GetArrayAttributeArray(std::vector<_attrib_type_>& out, 
-    const std::vector<_attrib_type_> RawVertex::*ptr,
-    const int arrayOffset)
-    const;
+  void GetArrayAttributeArray(
+      std::vector<_attrib_type_>& out,
+      const std::vector<_attrib_type_> RawVertex::*ptr,
+      const int arrayOffset) const;
 
   // Create an array with a raw model for each material.
   // Multiple surfaces with the same material will turn into a single model.
@@ -571,9 +571,9 @@ void RawModel::GetAttributeArray(
 
 template <typename _attrib_type_>
 void RawModel::GetArrayAttributeArray(
-  std::vector<_attrib_type_>& out,
-  const std::vector<_attrib_type_> RawVertex::*ptr,
-  const int arrayOffset) const {
+    std::vector<_attrib_type_>& out,
+    const std::vector<_attrib_type_> RawVertex::*ptr,
+    const int arrayOffset) const {
   out.resize(vertices.size());
   for (size_t i = 0; i < vertices.size(); i++) {
     out[i] = (vertices[i].*ptr)[arrayOffset];

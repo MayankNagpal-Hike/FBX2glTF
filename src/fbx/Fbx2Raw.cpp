@@ -32,6 +32,14 @@
 #include "materials/RoughnessMetallicMaterials.hpp"
 #include "materials/TraditionalMaterials.hpp"
 
+#ifdef _WIN32
+#define SLASH_CHAR '\\'
+#define ALTERNATIVE_SLASH_CHAR '/'
+#else
+#define SLASH_CHAR '/'
+#define ALTERNATIVE_SLASH_CHAR '\\'
+#endif
+
 float scaleFactor;
 
 static std::string NativeToUTF8(const std::string& str) {
@@ -229,11 +237,11 @@ static void ReadMesh(
       targetShapes.push_back(&shape);
       auto& blendChannel = blendShapes.GetBlendChannel(channelIx);
 
-      rawSurface.blendChannels.push_back(
-          RawBlendChannel{static_cast<float>(blendChannel.deformPercent),
-                          shape.normals.LayerPresent(),
-                          shape.tangents.LayerPresent(),
-                          blendChannel.name});
+      rawSurface.blendChannels.push_back(RawBlendChannel{
+          static_cast<float>(blendChannel.deformPercent),
+          shape.normals.LayerPresent(),
+          shape.tangents.LayerPresent(),
+          blendChannel.name});
     }
   }
 
@@ -461,7 +469,7 @@ static void ReadMesh(
     const RawMaterialType materialType =
         GetMaterialType(raw, textures, vertexTransparency, skinning.IsSkinned());
     const int rawMaterialIndex = raw.AddMaterial(
-        materialId, materialName, materialType, textures, rawMatProps, userProperties);
+        materialId, materialName, materialType, textures, rawMatProps, userProperties, false);
 
     raw.AddTriangle(
         rawVertexIndices[0],
@@ -994,6 +1002,21 @@ static std::string FindFbxTexture(
   // else look in other designated folders
   for (int ii = 0; ii < folders.size(); ii++) {
     const auto& fileLocation = FindFileLoosely(textureFileName, folders[ii], folderContents[ii]);
+    if (!fileLocation.empty()) {
+      return FileUtils::GetAbsolutePath(fileLocation);
+    }
+  }
+  // Replace slashes with alternative platform version (e.g. '/' instead of '\\')
+  std::string textureFileNameAltSlash = textureFileName;
+  std::replace(
+      textureFileNameAltSlash.begin(),
+      textureFileNameAltSlash.end(),
+      ALTERNATIVE_SLASH_CHAR,
+      SLASH_CHAR);
+  // finally look with alternative slashes
+  for (int ii = 0; ii < folders.size(); ii++) {
+    const auto& fileLocation =
+        FindFileLoosely(textureFileNameAltSlash, folders[ii], folderContents[ii]);
     if (!fileLocation.empty()) {
       return FileUtils::GetAbsolutePath(fileLocation);
     }

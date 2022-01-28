@@ -15,6 +15,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 
+#ifdef CopyFile
+#undef CopyFile
+#endif
+
 namespace FileUtils {
 
 std::string GetCurrentFolder();
@@ -50,7 +54,8 @@ inline bool FolderExists(const std::string& folderPath) {
 }
 
 inline std::string getFolder(const std::string& path) {
-  return boost::filesystem::path(path).parent_path().string();
+  auto parent = boost::filesystem::path(path).parent_path().string();
+  return parent == "" ? "." : parent;
 }
 
 inline std::string GetFileName(const std::string& path) {
@@ -67,6 +72,10 @@ inline boost::optional<std::string> GetFileSuffix(const std::string& path) {
     return boost::none;
   }
   return extension.string().substr(1);
+}
+
+inline bool MakeDir(const std::string& path) {
+  return boost::filesystem::create_directories(boost::filesystem::path(path));
 }
 
 } // namespace FileUtils

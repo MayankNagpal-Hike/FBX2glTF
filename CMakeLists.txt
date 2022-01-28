@@ -46,9 +46,10 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_BINARY_DIR}")
 
 # stuff we get from Conan
 find_package(Boost 1.76 COMPONENTS system filesystem program_options REQUIRED )
-find_package(libxml2 MODULE REQUIRED)
 find_package(ZLIB MODULE REQUIRED)
 find_package(fmt MODULE REQUIRED)
+find_package(Iconv MODULE REQUIRED)
+find_package(LibXml2  MODULE REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -119,7 +120,6 @@ endif()
 
 set(LIB_SOURCE_FILES
         src/FBX2glTF.h
-        src/fbx/materials/ArnoldStandardMaterial.cpp
         src/fbx/materials/3dsMaxPhysicalMaterial.cpp
         src/fbx/materials/FbxMaterials.cpp
         src/fbx/materials/FbxMaterials.hpp
@@ -182,8 +182,8 @@ set(LIB_SOURCE_FILES
 
 add_library(libFBX2glTF STATIC ${LIB_SOURCE_FILES})
 set_target_properties(libFBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
-add_executable(appFBX2glTF src/FBX2glTF.cpp)
-set_target_properties(appFBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
+add_executable(FBX2glTF src/FBX2glTF.cpp)
+set_target_properties(FBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
 
 add_dependencies(libFBX2glTF
   Draco
@@ -198,7 +198,7 @@ if (NOT MSVC)
     "-Wno-null-dereference"
     "-Wunused"
     )
-  target_compile_options(appFBX2glTF PRIVATE
+  target_compile_options(FBX2glTF PRIVATE
     "-Wno-null-dereference"
     "-Wunused"
     )
@@ -212,19 +212,12 @@ target_link_libraries(libFBX2glTF
   optimized ${FBXSDK_LIBRARY}
   debug ${FBXSDK_LIBRARY_DEBUG}
   fmt::fmt
-  libxml2::libxml2
   ZLIB::ZLIB
+  LibXml2::LibXml2
+  ${ICONV_MAC_LIB}
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
 )
-
-if (APPLE)
- find_package(Iconv MODULE REQUIRED)
- target_link_libraries(libFBX2glTF Iconv)
-else()
- find_package(libiconv MODULE REQUIRED)
- target_link_libraries(libFBX2glTF libiconv::libiconv)
-endif()
 
 target_include_directories(libFBX2glTF PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -240,12 +233,17 @@ target_include_directories(libFBX2glTF SYSTEM PUBLIC
   ${CPPCODEC_INCLUDE_DIR}
 )
 
-target_include_directories(appFBX2glTF PUBLIC
+target_include_directories(FBX2glTF PUBLIC
   "third_party/CLI11"
 )
-target_link_libraries(appFBX2glTF libFBX2glTF)
 
-install (TARGETS libFBX2glTF appFBX2glTF
+if (APPLE)
+set(ICONV_MAC_LIB iconv)
+endif()
+
+target_link_libraries(FBX2glTF libFBX2glTF ${ICONV_MAC_LIB})
+
+install (TARGETS libFBX2glTF FBX2glTF
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib
 )

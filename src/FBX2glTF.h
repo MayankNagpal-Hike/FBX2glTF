@@ -17,7 +17,7 @@
 #include <Windows.h>
 #endif
 
-#define FBX2GLTF_VERSION std::string("0.9.7")
+#define FBX2GLTF_VERSION std::string("0.10.0")
 
 #include <fmt/printf.h>
 
@@ -90,6 +90,8 @@ struct GltfOptions {
   /** If non-binary, whether to inline all resources, for a single (large) .glTF file. */
   bool embedResources{false};
 
+  bool separateTextures{true};
+
   /** Whether and how to use KHR_draco_mesh_compression to minimize static geometry size. */
   struct {
     bool enabled = false;
@@ -107,7 +109,7 @@ struct GltfOptions {
   /** Whether to use KHR_materials_unlit to extend materials definitions. */
   bool useKHRMatUnlit{false};
   /** Whether to populate the pbrMetallicRoughness substruct in materials. */
-  bool usePBRMetRough{false};
+  bool usePBRMetRough{true};
 
   /** Whether to include lights through the KHR_punctual_lights extension. */
   bool useKHRLightsPunctual{true};

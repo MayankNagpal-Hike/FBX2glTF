@@ -34,9 +34,8 @@ size_t VertexHasher::operator()(const RawVertex& v) const {
 bool RawVertex::operator==(const RawVertex& other) const {
   return (position == other.position) && (normal == other.normal) && (tangent == other.tangent) &&
       (binormal == other.binormal) && (color == other.color) && (uv0 == other.uv0) &&
-      (uv1 == other.uv1) &&
-      (jointWeights == other.jointWeights) && (jointIndices == other.jointIndices) &&
-      (polarityUv0 == other.polarityUv0) &&
+      (uv1 == other.uv1) && (jointWeights == other.jointWeights) &&
+      (jointIndices == other.jointIndices) && (polarityUv0 == other.polarityUv0) &&
       (blendSurfaceIx == other.blendSurfaceIx) && (blends == other.blends);
 }
 
@@ -70,7 +69,7 @@ size_t RawVertex::Difference(const RawVertex& other) const {
   return attributes;
 }
 
-RawModel::RawModel() : vertexAttributes(0){}
+RawModel::RawModel() : vertexAttributes(0) {}
 
 void RawModel::AddVertexAttribute(const RawVertexAttribute attrib) {
   vertexAttributes |= attrib;
@@ -140,7 +139,8 @@ int RawModel::AddMaterial(const RawMaterial& material) {
       material.type,
       material.textures,
       material.info,
-      material.userProperties);
+      material.userProperties,
+      material.isDoubleSided);
 }
 
 int RawModel::AddMaterial(
@@ -149,7 +149,8 @@ int RawModel::AddMaterial(
     const RawMaterialType materialType,
     const int textures[RAW_TEXTURE_USAGE_MAX],
     std::shared_ptr<RawMatProps> materialInfo,
-    const std::vector<std::string>& userProperties) {
+    const std::vector<std::string>& userProperties,
+    const bool isDoubleSided) {
   for (size_t i = 0; i < materials.size(); i++) {
     if (materials[i].name != name) {
       continue;
@@ -182,6 +183,7 @@ int RawModel::AddMaterial(
   material.type = materialType;
   material.info = materialInfo;
   material.userProperties = userProperties;
+  material.isDoubleSided = isDoubleSided;
 
   for (int i = 0; i < RAW_TEXTURE_USAGE_MAX; i++) {
     material.textures[i] = textures[i];
@@ -406,15 +408,17 @@ void RawModel::Condense(const int maxSkinningWeights, const bool normalizeWeight
 
   {
     globalMaxWeights = 0;
-    for (auto& vertex: vertices) {
-
+    for (auto& vertex : vertices) {
       // Sort from largest to smallest weight.
-      std::sort(vertex.skinningInfo.begin(), vertex.skinningInfo.end(), std::greater<RawVertexSkinningInfo>());
-      
+      std::sort(
+          vertex.skinningInfo.begin(),
+          vertex.skinningInfo.end(),
+          std::greater<RawVertexSkinningInfo>());
+
       // Reduce to fit the requirements.
       if (maxSkinningWeights < vertex.skinningInfo.size())
         vertex.skinningInfo.resize(maxSkinningWeights);
-      globalMaxWeights = std::max(globalMaxWeights, (int) vertex.skinningInfo.size());
+      globalMaxWeights = std::max(globalMaxWeights, (int)vertex.skinningInfo.size());
 
       // Normalize weights if requested.
       if (normalizeWeights) {
@@ -432,15 +436,15 @@ void RawModel::Condense(const int maxSkinningWeights, const bool normalizeWeight
       AddVertexAttribute(RAW_VERTEX_ATTRIBUTE_JOINT_WEIGHTS);
     }
 
-    
     assert(globalMaxWeights >= 0);
     // Copy to gltf friendly structure
     for (auto& vertex : vertices) {
       vertex.jointIndices.reserve(globalMaxWeights);
       vertex.jointWeights.reserve(globalMaxWeights);
-      for (int i = 0; i < globalMaxWeights; i += 4) { // ensure every vertex has the same amount of weights
+      for (int i = 0; i < globalMaxWeights;
+           i += 4) { // ensure every vertex has the same amount of weights
         Vec4f weights{0.0};
-        Vec4i jointIds{0,0,0,0};
+        Vec4i jointIds{0, 0, 0, 0};
         for (int j = i; j < i + 4 && j < vertex.skinningInfo.size(); j++) {
           weights[j - i] = vertex.skinningInfo[j].jointWeight;
           jointIds[j - i] = vertex.skinningInfo[j].jointIndex;
