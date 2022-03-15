@@ -797,6 +797,13 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
           if (curve == nullptr) {
             continue;
           }
+
+          if (verboseOutput) {
+            for (int curveKeyIx = 0; curveKeyIx < curve->KeyGetCount(); curveKeyIx++) {
+              fmt::printf("animation curve for %s: %f", node->GetName(), curve->KeyGetValue(curveKeyIx));
+            }
+          }
+
           // simply take the interval as first key to last key
           int firstKeyIndex = 0;
           int lastKeyIndex = std::max(firstKeyIndex, curve->KeyGetCount() - 1);
