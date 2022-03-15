@@ -841,11 +841,9 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       const FbxQuaternion baseRotation = baseTransform.GetQ();
       const FbxVector4 baseScaling = computeLocalScale(pNode);
 
-      FbxVector4 diffTranslation = FbxVector4(0.0f, 0.0f, 0.0f, 0.0f);
-      FbxQuaternion diffRotation = FbxQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
-      FbxVector4 diffScaling = FbxVector4(0.0f, 0.0f, 0.0f, 0.0f);
-      FbxAMatrix previousTransform;
-      FbxTime previousTime;
+      FbxVector4 previousTranslation = baseTranslation;
+      FbxQuaternion previousRotation = baseRotation;
+      FbxVector4 previousScaling = baseScaling;
 
       bool initialNode = true;
 
@@ -860,49 +858,28 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         const FbxVector4 localTranslation = localTransform.GetT();
         const FbxQuaternion localRotation = localTransform.GetQ();
         const FbxVector4 localScale = computeLocalScale(pNode, pTime);
-        
-        const FbxVector4 previousTranslation = initialNode ? localTransform.GetT() : previousTransform.GetT();
-        const FbxQuaternion previousRotation = initialNode ? localTransform.GetQ() : previousTransform.GetQ();
-        const FbxVector4 previousScaling = initialNode ? computeLocalScale(pNode, pTime) : computeLocalScale(pNode, previousTime); 
 
-        const bool useTranslation = initialNode || (localTranslation[0] - previousTranslation[0] - diffTranslation[0] > 0.005 || localTranslation[1] - previousTranslation[1] - diffTranslation[1] > 0.005 || localTranslation[2] - previousTranslation[2] - diffTranslation[2] > 0.005 || localTranslation[3] - previousTranslation[3] - diffTranslation[3] > 0.005);
-        const bool useRotation = initialNode || (localRotation[0] - previousRotation[0] - diffRotation[0] > 0.005 || localRotation[1] - previousRotation[1] - diffRotation[1] > 0.005 || localRotation[2] - previousRotation[2] - diffRotation[2] > 0.005 || localRotation[3] - previousRotation[3] - diffRotation[3] > 0.005);
-        const bool useScaling = initialNode || (localScale[0] - previousScaling[0] - diffScaling[0] > 0.005 || localScale[1] - previousScaling[1] - diffScaling[1] > 0.005 || localScale[2] - previousScaling[2] - diffScaling[2] > 0.005 || localScale[3] - previousScaling[3] - diffScaling[3]> 0.005);
+        const bool useTranslation = initialNode || (localTranslation[0] != previousTranslation[0] || localTranslation[1] != previousTranslation[1] || localTranslation[2] != previousTranslation[2] || localTranslation[3] != previousTranslation[3]);
+        const bool useRotation = initialNode || (localRotation[0] != previousRotation[0] || localRotation[1] != previousRotation[1] || localRotation[2] != previousRotation[2] || localRotation[3] != previousRotation[3]);
+        const bool useScaling = initialNode || (localScale[0] != previousScaling[0] || localScale[1] != previousScaling[1] || localScale[2] != previousScaling[2] || localScale[3] != previousScaling[3]);
 
-        if (!initialNode)
-        {
-          diffTranslation[0] = localTranslation[0] - previousTranslation[0];
-          diffTranslation[1] = localTranslation[1] - previousTranslation[1];
-          diffTranslation[2] = localTranslation[2] - previousTranslation[2];
-          diffTranslation[3] = localTranslation[3] - previousTranslation[3];
+        initialNode = false;
 
-          diffRotation[0] = localRotation[0] - previousRotation[0];
-          diffRotation[1] = localRotation[1] - previousRotation[1];
-          diffRotation[2] = localRotation[2] - previousRotation[2];
-          diffRotation[3] = localRotation[3] - previousRotation[3];
-
-          diffScaling[0] = localScale[0] - previousScaling[0];
-          diffScaling[1] = localScale[1] - previousScaling[1];
-          diffScaling[2] = localScale[2] - previousScaling[2];
-          diffScaling[3] = localScale[3] - previousScaling[3];
-        }
         if (useTranslation)
+        {
           channel.translations.push_back(toVec3f(localTranslation) * scaleFactor);
-        if (useRotation)
-          channel.rotations.push_back(toQuatf(localRotation));      
-        if (useScaling)
-          channel.scales.push_back(toVec3f(localScale));
-
-        initialNode = !initialNode ? frameIndex == lastFrameIndex - 1 : false;
-
-        if (verboseOutput) {
-          fmt::printf("Frame Number %d\n", frameIndex);
-          if (frameIndex == lastFrameIndex - 1)
-            fmt::printf("Next Last Frame\n");
+          previousTranslation = localTranslation;
         }
-
-        previousTransform = localTransform;
-        previousTime = pTime;
+        if (useRotation)
+        {
+          channel.rotations.push_back(toQuatf(localRotation));
+          previousRotation = localRotation;
+        }
+        if (useScaling)
+        {
+          channel.scales.push_back(toVec3f(localScale));
+          previousScaling = localScale;
+        }
       }
 
       std::vector<FbxAnimCurve*> shapeAnimCurves;
