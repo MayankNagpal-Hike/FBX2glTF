@@ -861,9 +861,9 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         const FbxQuaternion localRotation = localTransform.GetQ();
         const FbxVector4 localScale = computeLocalScale(pNode, pTime);
         
-        const FbxVector4 previousTranslation = initialNode ? NULL : previousTransform.GetT();
-        const FbxQuaternion previousRotation = initialNode ? NULL : previousTransform.GetQ();
-        const FbxVector4 previousScaling = initialNode ? NULL : computeLocalScale(pNode, previousTime); 
+        const FbxVector4 previousTranslation = initialNode ? localTransform.GetT() : previousTransform.GetT();
+        const FbxQuaternion previousRotation = initialNode ? localTransform.GetQ() : previousTransform.GetQ();
+        const FbxVector4 previousScaling = initialNode ? computeLocalScale(pNode, pTime) : computeLocalScale(pNode, previousTime); 
 
         const bool useTranslation = initialNode || (localTranslation[0] - previousTranslation[0] != diffTranslation[0] || localTranslation[1] - previousTranslation[1] != diffTranslation[1] || localTranslation[2] - previousTranslation[2] != diffTranslation[2] || localTranslation[3] - previousTranslation[3] != diffTranslation[3]);
         const bool useRotation = initialNode || (localRotation[0] - previousRotation[0] != diffRotation[0] || localRotation[1] - previousRotation[1] != diffRotation[1] || localRotation[2] - previousRotation[2] != diffRotation[2] || localRotation[3] - previousRotation[3] != diffRotation[3]);
