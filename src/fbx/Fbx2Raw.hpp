@@ -9,6 +9,7 @@
 #pragma once
 
 #include "raw/RawModel.hpp"
+#include <mathfu/quaternion.h>
 
 bool LoadFBXFile(
     RawModel& raw,
