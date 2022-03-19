@@ -841,45 +841,101 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       const FbxQuaternion baseRotation = baseTransform.GetQ();
       const FbxVector4 baseScaling = computeLocalScale(pNode);
 
-      FbxVector4 previousTranslation = baseTranslation;
-      FbxQuaternion previousRotation = baseRotation;
-      FbxVector4 previousScaling = baseScaling;
-
-      bool initialNode = true;
+      FbxVector4 previousTranslation, nextTranslation;
+      FbxQuaternion previousRotation, nextRotation;
+      FbxVector4 previousScaling, nextScaling;
 
       RawChannel channel;
       channel.nodeIndex = raw.GetNodeById(pNode->GetUniqueID());
 
-      for (FbxLongLong frameIndex = firstFrameIndex; frameIndex <= lastFrameIndex; frameIndex++) {
+      FbxTime tempTime;
+      tempTime.SetFrame(firstFrameIndex, eMode);
+
+      FbxAMatrix tempTransform = pNode->EvaluateLocalTransform(tempTime);
+      channel.translations.push_back(toVec3f(tempTransform.GetT()) * scaleFactor);
+      channel.rotations.push_back(toQuatf(tempTransform.GetQ()));
+      channel.scales.push_back(toVec3f(computeLocalScale(pNode, tempTime)));
+
+      previousTranslation = tempTransform.GetT();
+      previousRotation = tempTransform.GetQ();
+      previousScaling = computeLocalScale(pNode, tempTime);
+
+      if (verboseOutput) {
+        fmt::printf("First Frame Added\n");
+      }
+
+      if (firstFrameIndex != lastFrameIndex)
+      {
+        tempTime.SetFrame(firstFrameIndex, eMode);
+        tempTransform = pNode->EvaluateLocalTransform(tempTime);
+
+        nextTranslation = tempTransform.GetT();
+        nextRotation = tempTransform.GetQ();
+        nextScaling = computeLocalScale(pNode, tempTime);
+      }
+
+      float tolerance = 1e-4;
+
+      if (verboseOutput) {
+        fmt::printf("Tolerance is %f\n", tolerance);
+      }
+
+      for (FbxLongLong frameIndex = firstFrameIndex + 2; frameIndex <= lastFrameIndex; frameIndex++) {
         FbxTime pTime;
         pTime.SetFrame(frameIndex, eMode);
 
+        const FbxVector4 localTranslation = nextTranslation;
+        const FbxQuaternion localRotation = nextRotation;
+        const FbxVector4 localScale = nextScaling;
+
         const FbxAMatrix localTransform = pNode->EvaluateLocalTransform(pTime);
-        const FbxVector4 localTranslation = localTransform.GetT();
-        const FbxQuaternion localRotation = localTransform.GetQ();
-        const FbxVector4 localScale = computeLocalScale(pNode, pTime);
+        nextTranslation = localTransform.GetT();
+        nextRotation = localTransform.GetQ();
+        nextScaling = computeLocalScale(pNode, pTime);
 
-        const bool useTranslation = initialNode || (localTranslation[0] != previousTranslation[0] || localTranslation[1] != previousTranslation[1] || localTranslation[2] != previousTranslation[2] || localTranslation[3] != previousTranslation[3]);
-        const bool useRotation = initialNode || (localRotation[0] != previousRotation[0] || localRotation[1] != previousRotation[1] || localRotation[2] != previousRotation[2] || localRotation[3] != previousRotation[3]);
-        const bool useScaling = initialNode || (localScale[0] != previousScaling[0] || localScale[1] != previousScaling[1] || localScale[2] != previousScaling[2] || localScale[3] != previousScaling[3]);
-
-        initialNode = false;
+        const bool useTranslation = fabs((localTranslation[0] - previousTranslation[0]) - (nextTranslation[0] - localTranslation[0])) > tolerance || fabs((localTranslation[1] - previousTranslation[1]) - (nextTranslation[1] - localTranslation[1])) > tolerance || fabs((localTranslation[2] - previousTranslation[2]) - (nextTranslation[2] - localTranslation[2])) > tolerance || fabs((localTranslation[3] - previousTranslation[3]) - (nextTranslation[3] - localTranslation[3])) > tolerance;
+        const bool useRotation = fabs((localRotation[0] - previousRotation[0]) - (nextRotation[0] - localRotation[0])) > tolerance || fabs((localRotation[1] - previousRotation[1]) - (nextRotation[1] - localRotation[1])) > tolerance || fabs((localRotation[2] - previousRotation[2]) - (nextRotation[2] - localRotation[2])) > tolerance || fabs((localRotation[3] - previousRotation[3]) - (nextRotation[3] - localRotation[3])) > tolerance;
+        const bool useScaling = fabs((localScaling[0] - previousScaling[0]) - (nextScaling[0] - localScaling[0])) > tolerance || fabs((localScaling[1] - previousScaling[1]) - (nextScaling[1] - localScaling[1])) > tolerance || fabs((localScaling[2] - previousScaling[2]) - (nextScaling[2] - localScaling[2])) > tolerance || fabs((localScaling[3] - previousScaling[3]) - (nextScaling[3] - localScaling[3])) > tolerance;
 
         if (useTranslation)
         {
           channel.translations.push_back(toVec3f(localTranslation) * scaleFactor);
           previousTranslation = localTranslation;
+          if (verboseOutput) {
+            fmt::printf("Frame - %d Translation Added\n", frameIndex - 1);
+          }
         }
         if (useRotation)
         {
           channel.rotations.push_back(toQuatf(localRotation));
           previousRotation = localRotation;
+          if (verboseOutput) {
+            fmt::printf("Frame - %d Rotation Added\n", frameIndex - 1);
+          }
         }
         if (useScaling)
         {
           channel.scales.push_back(toVec3f(localScale));
           previousScaling = localScale;
+          if (verboseOutput) {
+            fmt::printf("Frame - %d Scale Added\n", frameIndex - 1);
+          }
         }
+
+        previousTranslation = localTranslation;
+        previousRotation = localRotation;
+        previousScaling = localScale;
+      }
+
+      tempTime.SetFrame(lastFrameIndex, eMode);
+
+      tempTransform = pNode->EvaluateLocalTransform(tempTime);
+      channel.translations.push_back(toVec3f(tempTransform.GetT()) * scaleFactor);
+      channel.rotations.push_back(toQuatf(tempTransform.GetQ()));
+      channel.scales.push_back(toVec3f(computeLocalScale(pNode, tempTime)));
+
+      if (verboseOutput) {
+        fmt::printf("Last Frame Added\n");
       }
 
       std::vector<FbxAnimCurve*> shapeAnimCurves;
