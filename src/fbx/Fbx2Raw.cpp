@@ -894,7 +894,7 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         nextScaling = computeLocalScale(pNode, pTime);
 
         const bool useTranslation = fabs((localTranslation[0] - previousTranslation[0]) - (nextTranslation[0] - localTranslation[0])) > tolerance || fabs((localTranslation[1] - previousTranslation[1]) - (nextTranslation[1] - localTranslation[1])) > tolerance || fabs((localTranslation[2] - previousTranslation[2]) - (nextTranslation[2] - localTranslation[2])) > tolerance || fabs((localTranslation[3] - previousTranslation[3]) - (nextTranslation[3] - localTranslation[3])) > tolerance;
-        const bool useRotation = initialNode || (localRotation[0] != previousRotation[0] || localRotation[1] != previousRotation[1] || localRotation[2] != previousRotation[2] || localRotation[3] != previousRotation[3]);        
+        const bool useRotation = (localRotation[0] != previousRotation[0] || localRotation[1] != previousRotation[1] || localRotation[2] != previousRotation[2] || localRotation[3] != previousRotation[3]);        
         const bool useScaling = fabs((localScale[0] - previousScaling[0]) - (nextScaling[0] - localScale[0])) > tolerance || fabs((localScale[1] - previousScaling[1]) - (nextScaling[1] - localScale[1])) > tolerance || fabs((localScale[2] - previousScaling[2]) - (nextScaling[2] - localScale[2])) > tolerance || fabs((localScale[3] - previousScaling[3]) - (nextScaling[3] - localScale[3])) > tolerance;
 
         if (useTranslation)
