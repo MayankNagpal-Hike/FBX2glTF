@@ -889,12 +889,12 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         nextRotation = localTransform.GetQ();
         nextScaling = computeLocalScale(pNode, pTime);
 
-        const Vec3f localRotationE = localRotation.ToEulerAngles();
-        const Vec3f previousRotationE = previousRotation.ToEulerAngles();
-        const Vec3f nextRotationE = nextRotation.ToEulerAngles();
+        const FbxVector4 localRotationE = localRotation.DecomposeSphericalXYZ();
+        const FbxVector4 previousRotationE = previousRotation.DecomposeSphericalXYZ();
+        const FbxVector4 nextRotationE = nextRotation.DecomposeSphericalXYZ();
 
         const bool useTranslation = fabs((localTranslation[0] - previousTranslation[0]) - (nextTranslation[0] - localTranslation[0])) > tolerance || fabs((localTranslation[1] - previousTranslation[1]) - (nextTranslation[1] - localTranslation[1])) > tolerance || fabs((localTranslation[2] - previousTranslation[2]) - (nextTranslation[2] - localTranslation[2])) > tolerance || fabs((localTranslation[3] - previousTranslation[3]) - (nextTranslation[3] - localTranslation[3])) > tolerance;
-        const bool useRotation = fabs((localRotationE[0] - previousRotationE[0]) - (nextRotationE[0] - localRotationE[0])) > tolerance || fabs((localRotationE[1] - previousRotationE[1]) - (nextRotationE[1] - localRotationE[1])) > tolerance || fabs((localRotationE[2] - previousRotationE[2]) - (nextRotationE[2] - localRotationE[2])) > tolerance;
+        const bool useRotation = fabs((localRotationE[0] - previousRotationE[0]) - (nextRotationE[0] - localRotationE[0])) > tolerance || fabs((localRotationE[1] - previousRotationE[1]) - (nextRotationE[1] - localRotationE[1])) > tolerance || fabs((localRotationE[2] - previousRotationE[2]) - (nextRotationE[2] - localRotationE[2])) > tolerance || fabs((localRotationE[3] - previousRotationE[3]) - (nextRotationE[3] - localRotationE[3])) > tolerance;
         const bool useScaling = fabs((localScale[0] - previousScaling[0]) - (nextScaling[0] - localScale[0])) > tolerance || fabs((localScale[1] - previousScaling[1]) - (nextScaling[1] - localScale[1])) > tolerance || fabs((localScale[2] - previousScaling[2]) - (nextScaling[2] - localScale[2])) > tolerance || fabs((localScale[3] - previousScaling[3]) - (nextScaling[3] - localScale[3])) > tolerance;
 
         if (useTranslation)
