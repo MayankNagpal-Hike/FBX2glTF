@@ -870,7 +870,7 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         nextScaling = computeLocalScale(pNode, tempTime);
       }
 
-      float tolerance = 1e-5;
+      float tolerance = 1e-3;
 
       if (verboseOutput) {
         fmt::printf("Tolerance is %f\n", tolerance);
