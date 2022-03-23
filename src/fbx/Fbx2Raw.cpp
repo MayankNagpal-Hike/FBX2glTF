@@ -851,10 +851,15 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       tempTime.SetFrame(firstFrameIndex, eMode);
 
       FbxAMatrix tempTransform = pNode->EvaluateLocalTransform(tempTime);
+      
       channel.translations.push_back(toVec3f(tempTransform.GetT()) * scaleFactor);
+      channel.translationTimes.emplace_back((float)tempTime.GetSecondDouble());
+
       channel.rotations.push_back(toQuatf(tempTransform.GetQ()));
+      channel.rotationTimes.emplace_back((float)tempTime.GetSecondDouble());
+      
       channel.scales.push_back(toVec3f(computeLocalScale(pNode, tempTime)));
-      channel.times.emplace_back((float)tempTime.GetSecondDouble());
+      channel.scaleTimes.emplace_back((float)tempTime.GetSecondDouble());
 
       previousTranslation = tempTransform.GetT();
       previousRotation = tempTransform.GetQ();
@@ -897,12 +902,20 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         const bool useRotation = fabs((localRotationE[0] - previousRotationE[0]) - (nextRotationE[0] - localRotationE[0])) > tolerance || fabs((localRotationE[1] - previousRotationE[1]) - (nextRotationE[1] - localRotationE[1])) > tolerance || fabs((localRotationE[2] - previousRotationE[2]) - (nextRotationE[2] - localRotationE[2])) > tolerance || fabs((localRotationE[3] - previousRotationE[3]) - (nextRotationE[3] - localRotationE[3])) > tolerance;
         const bool useScaling = fabs((localScale[0] - previousScaling[0]) - (nextScaling[0] - localScale[0])) > tolerance || fabs((localScale[1] - previousScaling[1]) - (nextScaling[1] - localScale[1])) > tolerance || fabs((localScale[2] - previousScaling[2]) - (nextScaling[2] - localScale[2])) > tolerance || fabs((localScale[3] - previousScaling[3]) - (nextScaling[3] - localScale[3])) > tolerance;
 
-        if (useTranslation || useRotation || useScaling)
+        if (useTranslation)
         {
           channel.translations.push_back(toVec3f(localTranslation) * scaleFactor);
+          channel.translationTimes.emplace_back((float)pTime.GetSecondDouble());
+        }
+        if (useRotation)
+        {
           channel.rotations.push_back(toQuatf(localRotation));
+          channel.rotationTimes.emplace_back((float)pTime.GetSecondDouble());
+        }
+        if (useScaling)
+        {
           channel.scales.push_back(toVec3f(localScale));
-          channel.times.emplace_back((float)pTime.GetSecondDouble());
+          channel.scaleTimes.emplace_back((float)pTime.GetSecondDouble());
         }
 
         previousTranslation = localTranslation;
@@ -913,10 +926,15 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       tempTime.SetFrame(lastFrameIndex, eMode);
 
       tempTransform = pNode->EvaluateLocalTransform(tempTime);
+
       channel.translations.push_back(toVec3f(tempTransform.GetT()) * scaleFactor);
+      channel.translationTimes.emplace_back((float)tempTime.GetSecondDouble());
+
       channel.rotations.push_back(toQuatf(tempTransform.GetQ()));
+      channel.rotationTimes.emplace_back((float)tempTime.GetSecondDouble());
+
       channel.scales.push_back(toVec3f(computeLocalScale(pNode, tempTime)));
-      channel.times.emplace_back((float)tempTime.GetSecondDouble());
+      channel.scaleTimes.emplace_back((float)tempTime.GetSecondDouble());
 
       std::vector<FbxAnimCurve*> shapeAnimCurves;
       FbxNodeAttribute* nodeAttr = pNode->GetNodeAttribute();

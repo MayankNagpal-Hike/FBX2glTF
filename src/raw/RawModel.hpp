@@ -310,10 +310,13 @@ struct RawSurface {
 struct RawChannel {
   int nodeIndex;
   std::vector<Vec3f> translations;
+  std::vector<float> translationTimes;
   std::vector<Quatf> rotations;
-  std::vector<float> times;
+  std::vector<float> rotationTimes;
   std::vector<Vec3f> scales;
+  std::vector<float> scaleTimes;
   std::vector<float> weights;
+  std::vector<float> weightTimes;
 };
 
 struct RawAnimation {

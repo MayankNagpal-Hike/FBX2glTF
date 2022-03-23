@@ -179,12 +179,12 @@ ModelData* Raw2Gltf(
               channel.weights.size());
         }
 
-        auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.times);
-        timeAccessor->min = {*std::min_element(std::begin(channel.times), std::end(channel.times))};
-        timeAccessor->max = {*std::max_element(std::begin(channel.times), std::end(channel.times))};
-
         NodeData& nDat = require(nodesById, node.id);
         if (!channel.translations.empty()) {
+          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.translationTimes);
+          timeAccessor->min = {*std::min_element(std::begin(channel.translationTimes), std::end(channel.translationTimes))};
+          timeAccessor->max = {*std::max_element(std::begin(channel.translationTimes), std::end(channel.translationTimes))};
+
           aDat.AddNodeChannel(
               nDat,
               *timeAccessor,
@@ -192,14 +192,26 @@ ModelData* Raw2Gltf(
               "translation");
         }
         if (!channel.rotations.empty()) {
+          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.rotationTimes);
+          timeAccessor->min = {*std::min_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
+          timeAccessor->max = {*std::max_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
+          
           aDat.AddNodeChannel(
               nDat, *timeAccessor, *gltf->AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
         }
         if (!channel.scales.empty()) {
+          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.scaleTimes);
+          timeAccessor->min = {*std::min_element(std::begin(channel.scaleTimes), std::end(channel.scaleTimes))};
+          timeAccessor->max = {*std::max_element(std::begin(channel.scaleTimes), std::end(channel.scaleTimes))};
+
           aDat.AddNodeChannel(
               nDat, *timeAccessor, *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
         }
         if (!channel.weights.empty()) {
+          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.weightTimes);
+          timeAccessor->min = {*std::min_element(std::begin(channel.weightTimes), std::end(channel.weightTimes))};
+          timeAccessor->max = {*std::max_element(std::begin(channel.weightTimes), std::end(channel.weightTimes))};
+
           aDat.AddNodeChannel(
               nDat,
               *timeAccessor,
