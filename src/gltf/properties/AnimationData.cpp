@@ -13,13 +13,14 @@
 #include "AccessorData.hpp"
 #include "NodeData.hpp"
 
-AnimationData::AnimationData(std::string name, const AccessorData& timeAccessor)
-    : Holdable(), name(std::move(name)), timeAccessor(timeAccessor.ix) {}
+AnimationData::AnimationData(std::string name)
+    : Holdable(), name(std::move(name)) {}
 
 // assumption: 1-to-1 relationship between channels and samplers; this is a simplification on what
 // glTF can express, but it means we can rely on samplerIx == channelIx throughout an animation
 void AnimationData::AddNodeChannel(
     const NodeData& node,
+    const AccessorData& timeAccessor,
     const AccessorData& accessor,
     std::string path) {
   assert(channels.size() == samplers.size());

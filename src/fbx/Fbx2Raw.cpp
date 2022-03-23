@@ -902,7 +902,7 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
           channel.translations.push_back(toVec3f(localTranslation) * scaleFactor);
           channel.rotations.push_back(toQuatf(localRotation));
           channel.scales.push_back(toVec3f(localScale));
-          animation.times.emplace_back((float)pTime.GetSecondDouble());
+          channel.times.emplace_back((float)pTime.GetSecondDouble());
         }
 
         previousTranslation = localTranslation;
@@ -916,7 +916,7 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       channel.translations.push_back(toVec3f(tempTransform.GetT()) * scaleFactor);
       channel.rotations.push_back(toQuatf(tempTransform.GetQ()));
       channel.scales.push_back(toVec3f(computeLocalScale(pNode, tempTime)));
-      animation.times.emplace_back((float)tempTime.GetSecondDouble());
+      channel.times.emplace_back((float)tempTime.GetSecondDouble());
 
       std::vector<FbxAnimCurve*> shapeAnimCurves;
       FbxNodeAttribute* nodeAttr = pNode->GetNodeAttribute();
