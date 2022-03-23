@@ -828,7 +828,6 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       FbxTime pTime;
       // first frame is always at t = 0.0
       pTime.SetFrame(frameIndex - firstFrameIndex, eMode);
-      animation.times.emplace_back((float)pTime.GetSecondDouble());
     }
 
     size_t totalSizeInBytes = 0;
@@ -855,6 +854,7 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       channel.translations.push_back(toVec3f(tempTransform.GetT()) * scaleFactor);
       channel.rotations.push_back(toQuatf(tempTransform.GetQ()));
       channel.scales.push_back(toVec3f(computeLocalScale(pNode, tempTime)));
+      animation.times.emplace_back((float)tempTime.GetSecondDouble());
 
       previousTranslation = tempTransform.GetT();
       previousRotation = tempTransform.GetQ();
@@ -870,7 +870,7 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         nextScaling = computeLocalScale(pNode, tempTime);
       }
 
-      float tolerance = 1e-3;
+      float tolerance = 1e-4;
 
       if (verboseOutput) {
         fmt::printf("Tolerance is %f\n", tolerance);
@@ -897,20 +897,12 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
         const bool useRotation = fabs((localRotationE[0] - previousRotationE[0]) - (nextRotationE[0] - localRotationE[0])) > tolerance || fabs((localRotationE[1] - previousRotationE[1]) - (nextRotationE[1] - localRotationE[1])) > tolerance || fabs((localRotationE[2] - previousRotationE[2]) - (nextRotationE[2] - localRotationE[2])) > tolerance || fabs((localRotationE[3] - previousRotationE[3]) - (nextRotationE[3] - localRotationE[3])) > tolerance;
         const bool useScaling = fabs((localScale[0] - previousScaling[0]) - (nextScaling[0] - localScale[0])) > tolerance || fabs((localScale[1] - previousScaling[1]) - (nextScaling[1] - localScale[1])) > tolerance || fabs((localScale[2] - previousScaling[2]) - (nextScaling[2] - localScale[2])) > tolerance || fabs((localScale[3] - previousScaling[3]) - (nextScaling[3] - localScale[3])) > tolerance;
 
-        if (useTranslation)
+        if (useTranslation || useRotation || useScaling)
         {
           channel.translations.push_back(toVec3f(localTranslation) * scaleFactor);
-          previousTranslation = localTranslation;
-        }
-        if (useRotation)
-        {
           channel.rotations.push_back(toQuatf(localRotation));
-          previousRotation = localRotation;
-        }
-        if (useScaling)
-        {
           channel.scales.push_back(toVec3f(localScale));
-          previousScaling = localScale;
+          animation.times.emplace_back((float)pTime.GetSecondDouble());
         }
 
         previousTranslation = localTranslation;
@@ -924,6 +916,7 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
       channel.translations.push_back(toVec3f(tempTransform.GetT()) * scaleFactor);
       channel.rotations.push_back(toQuatf(tempTransform.GetQ()));
       channel.scales.push_back(toVec3f(computeLocalScale(pNode, tempTime)));
+      animation.times.emplace_back((float)tempTime.GetSecondDouble());
 
       std::vector<FbxAnimCurve*> shapeAnimCurves;
       FbxNodeAttribute* nodeAttr = pNode->GetNodeAttribute();
