@@ -156,11 +156,7 @@ ModelData* Raw2Gltf(
     for (int i = 0; i < raw.GetAnimationCount(); i++) {
       const RawAnimation& animation = raw.GetAnimation(i);
 
-      auto accessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, animation.times);
-      accessor->min = {*std::min_element(std::begin(animation.times), std::end(animation.times))};
-      accessor->max = {*std::max_element(std::begin(animation.times), std::end(animation.times))};
-
-      AnimationData& aDat = *gltf->animations.hold(new AnimationData(animation.name, *accessor));
+      AnimationData& aDat = *gltf->animations.hold(new AnimationData(animation.name));
       if (verboseOutput) {
         fmt::printf(
             "Animation '%s' has %lu channels:\n",
@@ -183,24 +179,30 @@ ModelData* Raw2Gltf(
               channel.weights.size());
         }
 
+        auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.times);
+        timeAccessor->min = {*std::min_element(std::begin(channel.times), std::end(channel.times))};
+        timeAccessor->max = {*std::max_element(std::begin(channel.times), std::end(channel.times))};
+
         NodeData& nDat = require(nodesById, node.id);
         if (!channel.translations.empty()) {
           aDat.AddNodeChannel(
               nDat,
+              *timeAccessor,
               *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.translations),
               "translation");
         }
         if (!channel.rotations.empty()) {
           aDat.AddNodeChannel(
-              nDat, *gltf->AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
+              nDat, *timeAccessor, *gltf->AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
         }
         if (!channel.scales.empty()) {
           aDat.AddNodeChannel(
-              nDat, *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
+              nDat, *timeAccessor, *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
         }
         if (!channel.weights.empty()) {
           aDat.AddNodeChannel(
               nDat,
+              *timeAccessor,
               *gltf->AddAccessorAndView(buffer, {CT_FLOAT, 1, "SCALAR"}, channel.weights),
               "weights");
         }

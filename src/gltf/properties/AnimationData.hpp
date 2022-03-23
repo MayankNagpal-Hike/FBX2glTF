@@ -11,11 +11,11 @@
 #include "gltf/Raw2Gltf.hpp"
 
 struct AnimationData : Holdable {
-  AnimationData(std::string name, const AccessorData& timeAccessor);
+  AnimationData(std::string name);
 
   // assumption: 1-to-1 relationship between channels and samplers; this is a simplification on what
   // glTF can express, but it means we can rely on samplerIx == channelIx throughout an animation
-  void AddNodeChannel(const NodeData& node, const AccessorData& accessor, std::string path);
+  void AddNodeChannel(const NodeData& node, const AccessorData& timeAccessor, const AccessorData& accessor, std::string path);
 
   json serialize() const override;
 

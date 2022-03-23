@@ -311,13 +311,13 @@ struct RawChannel {
   int nodeIndex;
   std::vector<Vec3f> translations;
   std::vector<Quatf> rotations;
+  std::vector<float> times;
   std::vector<Vec3f> scales;
   std::vector<float> weights;
 };
 
 struct RawAnimation {
   std::string name;
-  std::vector<float> times;
   std::vector<RawChannel> channels;
 };
 
