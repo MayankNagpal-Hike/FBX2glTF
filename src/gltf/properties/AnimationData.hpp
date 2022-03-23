@@ -35,7 +35,6 @@ struct AnimationData : Holdable {
   };
 
   const std::string name;
-  const uint32_t timeAccessor;
   std::vector<channel_t> channels;
   std::vector<sampler_t> samplers;
 };
