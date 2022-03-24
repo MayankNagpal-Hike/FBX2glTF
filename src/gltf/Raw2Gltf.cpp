@@ -181,40 +181,40 @@ ModelData* Raw2Gltf(
 
         NodeData& nDat = require(nodesById, node.id);
         if (!channel.translations.empty()) {
-          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.translationTimes);
-          timeAccessor->min = {*std::min_element(std::begin(channel.translationTimes), std::end(channel.translationTimes))};
-          timeAccessor->max = {*std::max_element(std::begin(channel.translationTimes), std::end(channel.translationTimes))};
+          auto translationTimeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.translationTimes);
+          translationTimeAccessor->min = {*std::min_element(std::begin(channel.translationTimes), std::end(channel.translationTimes))};
+          translationTimeAccessor->max = {*std::max_element(std::begin(channel.translationTimes), std::end(channel.translationTimes))};
 
           aDat.AddNodeChannel(
               nDat,
-              *timeAccessor,
+              *translationTimeAccessor,
               *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.translations),
               "translation");
         }
         if (!channel.rotations.empty()) {
-          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.rotationTimes);
-          timeAccessor->min = {*std::min_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
-          timeAccessor->max = {*std::max_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
+          auto rotationTimeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.rotationTimes);
+          rotationTimeAccessor->min = {*std::min_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
+          rotationTimeAccessor->max = {*std::max_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
           
           aDat.AddNodeChannel(
-              nDat, *timeAccessor, *gltf->AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
+              nDat, *rotationTimeAccessor, *gltf->AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
         }
         if (!channel.scales.empty()) {
-          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.scaleTimes);
-          timeAccessor->min = {*std::min_element(std::begin(channel.scaleTimes), std::end(channel.scaleTimes))};
-          timeAccessor->max = {*std::max_element(std::begin(channel.scaleTimes), std::end(channel.scaleTimes))};
+          auto scaleTimeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.scaleTimes);
+          scaleTimeAccessor->min = {*std::min_element(std::begin(channel.scaleTimes), std::end(channel.scaleTimes))};
+          scaleTimeAccessor->max = {*std::max_element(std::begin(channel.scaleTimes), std::end(channel.scaleTimes))};
 
           aDat.AddNodeChannel(
-              nDat, *timeAccessor, *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
+              nDat, *scaleTimeAccessor, *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
         }
         if (!channel.weights.empty()) {
-          auto timeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.weightTimes);
-          timeAccessor->min = {*std::min_element(std::begin(channel.weightTimes), std::end(channel.weightTimes))};
-          timeAccessor->max = {*std::max_element(std::begin(channel.weightTimes), std::end(channel.weightTimes))};
+          auto weightTimeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.rotationTimes);
+          weightTimeAccessor->min = {*std::min_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
+          weightTimeAccessor->max = {*std::max_element(std::begin(channel.rotationTimes), std::end(channel.rotationTimes))};
 
           aDat.AddNodeChannel(
               nDat,
-              *timeAccessor,
+              *weightTimeAccessor,
               *gltf->AddAccessorAndView(buffer, {CT_FLOAT, 1, "SCALAR"}, channel.weights),
               "weights");
         }
