@@ -190,6 +190,10 @@ ModelData* Raw2Gltf(
               *translationTimeAccessor,
               *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.translations),
               "translation");
+          
+          if (verboseOutput) {
+            fmt::printf("   Add Translation Data");
+          }
         }
         if (!channel.rotations.empty()) {
           auto rotationTimeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.rotationTimes);
@@ -198,6 +202,10 @@ ModelData* Raw2Gltf(
           
           aDat.AddNodeChannel(
               nDat, *rotationTimeAccessor, *gltf->AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
+          
+          if (verboseOutput) {
+            fmt::printf("   Add Rotation Data");
+          }
         }
         if (!channel.scales.empty()) {
           auto scaleTimeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.scaleTimes);
@@ -206,6 +214,10 @@ ModelData* Raw2Gltf(
 
           aDat.AddNodeChannel(
               nDat, *scaleTimeAccessor, *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
+          
+          if (verboseOutput) {
+            fmt::printf("   Add Scale Data");
+          }
         }
         if (!channel.weights.empty()) {
           auto weightTimeAccessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, channel.rotationTimes);
@@ -217,6 +229,10 @@ ModelData* Raw2Gltf(
               *weightTimeAccessor,
               *gltf->AddAccessorAndView(buffer, {CT_FLOAT, 1, "SCALAR"}, channel.weights),
               "weights");
+          
+          if (verboseOutput) {
+            fmt::printf("   Add Weight Data");
+          }
         }
       }
     }
